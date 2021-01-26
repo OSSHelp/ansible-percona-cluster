@@ -1,0 +1,4 @@
+---
+
+- name: syslog
+  src: https://oss.help/ansible/pub/roles/syslog-stable.tar.gz

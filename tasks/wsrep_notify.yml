@@ -1,0 +1,9 @@
+---
+
+- name: place custom.wsrep_notify
+  template:
+    src: wsrep_notify.j2
+    dest: "{{ percona_cluster_wsrep_notify.script_path }}"
+    owner: root
+    group: mysql
+    mode: 0750

@@ -1,0 +1,42 @@
+#!/bin/bash
+
+RCPT={{ percona_cluster_wsrep_notify.mail_addr }}
+
+while [ $# -gt 0 ]
+do
+    case $1 in
+    --status)
+        STATUS=$2
+        shift
+        ;;
+    --uuid)
+        CLUSTER_UUID=$2
+        shift
+        ;;
+    --primary)
+        [ "$2" = "yes" ] && PRIMARY="Primary" || PRIMARY="Non-Primary"
+        shift
+        ;;
+    --index)
+        INDEX=$2
+        shift
+        ;;
+    --members)
+        MEMBERS=$2
+        shift
+        ;;
+    esac
+    shift
+done
+
+{
+    echo "Local date: `date +%Y%m%d-%H%M%S`"
+    echo "Cluster UUID: $CLUSTER_UUID"
+    echo "Current state: $STATUS"
+    echo "Cluster status: $PRIMARY"
+    echo "Current members: "
+    echo $MEMBERS | tr ',' '\n'
+} | tee -a /tmp/cluster.log | mail -s "[`hostname -f`]: cluster status changed" $RCPT
+
+
+exit 0

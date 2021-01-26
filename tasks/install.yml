@@ -1,0 +1,25 @@
+---
+
+- name: install percona-server
+  apt:
+    pkg: "percona-xtradb-cluster-{{ percona_cluster_version|replace('.','') }}"
+    state: present
+  register: percona_installed
+  notify: restart percona
+
+- name: install additional tools
+  apt:
+    pkg: "{{ item }}"
+    state: present
+  with_items:
+    - sysbench
+    - python-mysqldb
+
+- name: install additional tools for 5.6
+  apt:
+    pkg: "{{ item }}"
+    state: present
+  when: percona_cluster_version|version_compare('5.7','<')
+  with_items:
+    - percona-xtrabackup
+    - percona-toolkit

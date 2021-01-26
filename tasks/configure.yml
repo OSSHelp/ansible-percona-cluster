@@ -1,0 +1,53 @@
+---
+
+- name: add wsrep config
+  template:
+    src: "wsrep.j2"
+    dest: "/etc/mysql/conf.d/wsrep.cnf"
+    owner: root
+    group: mysql
+    mode: 0640
+  notify: restart percona
+
+- name: configure easy access for root user
+  template:
+    src: "root_my.cnf.j2"
+    dest: "{{ percona_cluster_root_my_cnf }}"
+
+- name: create sst user
+  mysql_user:
+    priv: "*.*:RELOAD,LOCK TABLES,REPLICATION CLIENT"
+    user: "{{ percona_cluster_wsrep.sst_username }}"
+    password: "{{ percona_cluster_wsrep.sst_password }}"
+    host: localhost
+  ignore_errors: true
+  when: percona_cluster_wsrep.primary
+
+- name: create monitoring user
+  mysql_user:
+    name: "{{ percona_cluster_wsrep.monitoring_username }}"
+    password: "{{ percona_cluster_wsrep.monitoring_password }}"
+    priv: "*.*:REPLICATION CLIENT,PROCESS"
+    host: "{{ item }}"
+    state: present
+  when: percona_cluster_wsrep.primary and percona_cluster_wsrep.monitoring_username is defined and percona_cluster_wsrep.monitoring_username | length > 0
+  with_items:
+    - localhost
+    - 127.0.0.1
+
+- name: place logrotate config
+  template:
+    src: "logrotate.j2"
+    dest: "/etc/logrotate.d/percona-xtradb-cluster-server-{{ percona_cluster_version }}"
+
+- name: secure the MySQL root user for localhost
+  mysql_user: >
+    user="root"
+    password="{{ percona_cluster_root_password }}"
+    host="127.0.0.1"
+  when: percona_cluster_wsrep.primary
+
+- name: remove the test database
+  mysql_db: >
+    db=test
+    state=absent

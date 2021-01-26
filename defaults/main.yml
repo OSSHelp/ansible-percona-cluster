@@ -1,0 +1,35 @@
+---
+
+percona_cluster_version: "5.6"
+percona_cluster_root_password: "placeholder_for_some_strong_password"
+percona_cluster_root_my_cnf: /root/.my.cnf
+
+percona_cluster_general:
+  datadir: /var/lib/mysql
+  pidfile: /var/run/mysqld/mysqld.pid
+  bind_address: '127.0.0.1'
+  server_id: ''
+  filter_allow_mysql_port: false
+  innodb_large_prefix: false
+  max_allowed_packet: 67108864
+  expire_log_days: 8
+
+percona_cluster_wsrep:
+  primary: false
+  wsrep_cluster_address: "gcomm://"
+  wsrep_cluster_name: 'unnamed-cluster'
+  wsrep_node_address: "1.2.3.4"
+  wsrep_node_name: 'node-1'
+  wsrep_provider: "/usr/lib/libgalera_smm.so"
+  wsrep_sst_method: "xtrabackup-v2"
+  wsrep_slave_threads: ''
+  wsrep_provider_options: ''
+  sst_username: ''
+  sst_password: ''
+  monitoring_username: ''
+  monitoring_password: ''
+
+percona_cluster_wsrep_notify:
+  enabled: true
+  script_path: '/usr/local/sbin/custom.wsrep_notify'
+  mail_addr: 'project-name-here@osshelp.pagerduty.com'

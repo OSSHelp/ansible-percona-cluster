@@ -1,0 +1,10 @@
+---
+
+- include_tasks: prepare.yml
+
+- include_tasks: install.yml
+
+- include_tasks: wsrep_notify.yml
+  when: percona_cluster_wsrep_notify.enabled
+
+- include_tasks: configure.yml
