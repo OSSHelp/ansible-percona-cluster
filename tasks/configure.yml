@@ -22,6 +22,8 @@
     host: localhost
   ignore_errors: true
   when: percona_cluster_wsrep.primary
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
 
 - name: create monitoring user
   mysql_user:
@@ -34,6 +36,8 @@
   with_items:
     - localhost
     - 127.0.0.1
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
 
 - name: place logrotate config
   template:
@@ -46,8 +50,12 @@
     password="{{ percona_cluster_root_password }}"
     host="127.0.0.1"
   when: percona_cluster_wsrep.primary
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
 
 - name: remove the test database
   mysql_db: >
     db=test
     state=absent
+  vars:
+    ansible_python_interpreter: /usr/bin/python3

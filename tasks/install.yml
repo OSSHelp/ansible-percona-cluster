@@ -13,7 +13,7 @@
     state: present
   with_items:
     - sysbench
-    - python-mysqldb
+    - python3-mysqldb
 
 - name: install additional tools for 5.6
   apt:
@@ -21,5 +21,5 @@
     state: present
   when: percona_cluster_version|version_compare('5.7','<')
   with_items:
-    - percona-xtrabackup
+    - percona-xtrabackup-24
     - percona-toolkit
