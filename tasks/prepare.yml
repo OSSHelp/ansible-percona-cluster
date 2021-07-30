@@ -1,20 +1,8 @@
 ---
 
-- name: add percona key
-  apt_key:
-    keyserver: keys.gnupg.net
-    id: "{{ item }}"
-    state: present
-  with_items:
-    - E1E2CD202D607DAF
-    - 1C4CBDCDCD2EFD2A
-    - 9334A25F8507EFA5
-    - 9E003FA64CAC6D72
-
-- name: add percona repository
-  apt_repository:
-    repo: 'deb http://repo.percona.com/apt {{ ansible_distribution_release }} main'
-    state: present
+- name: add percona repo
+  apt:
+    deb: https://repo.percona.com/apt/percona-release_latest.generic_all.deb
 
 - name: set root password
   debconf:
