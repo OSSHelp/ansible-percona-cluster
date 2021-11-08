@@ -1,44 +1,21 @@
 [mysqld]
-pid-file                 = {{ percona_cluster_general.pidfile|default("/var/run/mysqld/mysqld.pid", true) }}
-bind-address             = {{ percona_cluster_general.bind_address|default("127.0.0.1", true) }}
-datadir                  = {{ percona_cluster_general.datadir|default("/var/lib/mysql", true) }}
-server_id                = {{ percona_cluster_general.server_id }}
-expire-logs-days         = {{ percona_cluster_general.expire_log_days }}
-max_allowed_packet       = {{ percona_cluster_general.max_allowed_packet|default("67108864", true) }}
-log_error                = /var/log/mysql/error.log
-binlog_format            = ROW
-default_storage_engine   = InnoDB
-
-# InnoDB
-innodb_flush_log_at_trx_commit = 1
-innodb_flush_method            = O_DIRECT
-innodb_locks_unsafe_for_binlog = 1
-innodb_autoinc_lock_mode       = 2
-innodb_large_prefix            = {{ "on" if percona_cluster_general.innodb_large_prefix else "off" }}
-{% if percona_cluster_general.innodb_buffer_pool_size is defined %}
-innodb_buffer_pool_size        = {{ percona_cluster_general.innodb_buffer_pool_size }}
-{% elif ansible_memtotal_mb > 32000 %}
-innodb_buffer_pool_size        = {{ (ansible_memtotal_mb - 32000)*1024*1024 }}
-{% else %}
-innodb_buffer_pool_size        = 128M
-{% endif %}
 
 # wsrep
-wsrep_cluster_address   = {{ percona_cluster_wsrep.wsrep_cluster_address }}
-wsrep_cluster_name      = {{ percona_cluster_wsrep.wsrep_cluster_name }}
-wsrep_node_address      = {{ percona_cluster_wsrep.wsrep_node_address }}
-wsrep_node_name         = {{ percona_cluster_wsrep.wsrep_node_name }}
-wsrep_provider          = {{ percona_cluster_wsrep.wsrep_provider }}
-wsrep_sst_method        = {{ percona_cluster_wsrep.wsrep_sst_method }}
-wsrep_sst_auth          = {{ percona_cluster_wsrep.sst_username }}:{{ percona_cluster_wsrep.sst_password }}
-{% if percona_cluster_wsrep.wsrep_slave_threads|length %}
-wsrep_slave_threads     = {{ percona_cluster_wsrep.wsrep_slave_threads }}
+wsrep_cluster_address   = {{ percona_cluster_node.wsrep_cluster_address }}
+wsrep_cluster_name      = {{ percona_cluster_node.wsrep_cluster_name }}
+wsrep_node_address      = {{ percona_cluster_node.wsrep_node_address }}
+wsrep_node_name         = {{ percona_cluster_node.wsrep_node_name }}
+wsrep_provider          = {{ percona_cluster_node.wsrep_provider }}
+wsrep_sst_method        = {{ percona_cluster_node.wsrep_sst_method }}
+wsrep_sst_auth          = {{ percona_cluster_node.sst_username }}:{{ percona_cluster_node.sst_password }}
+{% if percona_cluster_node.wsrep_slave_threads|length %}
+wsrep_slave_threads     = {{ percona_cluster_node.wsrep_slave_threads }}
 {% else %}
 wsrep_slave_threads     = {{ ansible_processor_cores }}
 {% endif %}
 {% if percona_cluster_wsrep_notify.enabled and percona_cluster_wsrep_notify.script_path|length %}
 wsrep_notify_cmd        = "{{ percona_cluster_wsrep_notify.script_path }}"
 {% endif %}
-{% if percona_cluster_wsrep.wsrep_provider_options|length %}
-wsrep_provider_options  = "{{ percona_cluster_wsrep.wsrep_provider_options }}"
+{% if percona_cluster_node.wsrep_provider_options|length %}
+wsrep_provider_options  = "{{ percona_cluster_node.wsrep_provider_options }}"
 {% endif %}

@@ -4,6 +4,9 @@ percona_cluster_version: "5.6"
 percona_cluster_root_password: "placeholder_for_some_strong_password"
 percona_cluster_root_my_cnf: /root/.my.cnf
 
+percona_cluster_conf_available_dir: "/etc/mysql/conf-available"
+percona_cluster_conf_enabled_dir: "/etc/mysql/conf-enabled"
+
 percona_cluster_general:
   datadir: /var/lib/mysql
   pidfile: /var/run/mysqld/mysqld.pid

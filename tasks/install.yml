@@ -4,6 +4,7 @@
   apt:
     pkg: "percona-xtradb-cluster-{{ percona_cluster_version|replace('.','') }}"
     state: present
+    update_cache: yes
   register: percona_installed
   notify: restart percona
 
@@ -21,5 +22,5 @@
     state: present
   when: percona_cluster_version|version_compare('5.7','<')
   with_items:
-    - percona-xtrabackup-24
+    - percona-xtrabackup
     - percona-toolkit

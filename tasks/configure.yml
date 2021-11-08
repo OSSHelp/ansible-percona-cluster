@@ -1,13 +1,58 @@
 ---
+- name: create custom conf directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0775
+  loop:
+    - "{{ percona_cluster_conf_available_dir }}"
+    - "{{ percona_cluster_conf_enabled_dir }}"
+
+- name: add mysql config
+  template:
+    src: "mysql.j2"
+    dest: "/etc/mysql/conf.d/mysql.cnf"
+    owner: root
+    group: mysql
+    mode: 0640
+  check_mode: true
+  register: mysql_config
+
+- name: include conf-enabled dir
+  lineinfile:
+    path: /etc/mysql/my.cnf
+    line: "!includedir {{ percona_cluster_conf_enabled_dir }}/"
+
+- name: mysql config generation
+  block:
+    - name: stop percona
+      service:
+        name: mysql
+        state: stopped
+    - name: add mysql config
+      template:
+        src: "mysql.j2"
+        dest: "/etc/mysql/conf.d/mysql.cnf"
+        owner: root
+        group: mysql
+        mode: 0640
+      notify: restart percona
+    - name: start percona
+      service:
+        name: mysql
+        state: started
+  when: mysql_config.changed
 
 - name: add wsrep config
   template:
     src: "wsrep.j2"
-    dest: "/etc/mysql/conf.d/wsrep.cnf"
+    dest: "{{ percona_cluster_conf_available_dir }}/{{ percona_cluster_node.name }}.cnf"
     owner: root
     group: mysql
     mode: 0640
-  notify: restart percona
+  loop: "{{ percona_cluster_wsrep }}"
+  loop_control:
+    loop_var: percona_cluster_node
 
 - name: configure easy access for root user
   template:
@@ -17,31 +62,37 @@
 - name: create sst user
   mysql_user:
     priv: "*.*:RELOAD,LOCK TABLES,REPLICATION CLIENT"
-    user: "{{ percona_cluster_wsrep.sst_username }}"
-    password: "{{ percona_cluster_wsrep.sst_password }}"
+    user: "{{ percona_cluster_node.sst_username }}"
+    password: "{{ percona_cluster_node.sst_password }}"
     host: localhost
   ignore_errors: true
-  when: percona_cluster_wsrep.primary
+  when: percona_cluster_node.primary
   vars:
     ansible_python_interpreter: /usr/bin/python3
+  loop: "{{ percona_cluster_wsrep }}"
+  loop_control:
+    loop_var: percona_cluster_node
 
 - name: create monitoring user
   mysql_user:
-    name: "{{ percona_cluster_wsrep.monitoring_username }}"
-    password: "{{ percona_cluster_wsrep.monitoring_password }}"
+    name: "{{ item[0].monitoring_username }}"
+    password: "{{ item[0].monitoring_password }}"
     priv: "*.*:REPLICATION CLIENT,PROCESS"
-    host: "{{ item }}"
+    host: "{{ item[1] }}"
     state: present
-  when: percona_cluster_wsrep.primary and percona_cluster_wsrep.monitoring_username is defined and percona_cluster_wsrep.monitoring_username | length > 0
-  with_items:
-    - localhost
-    - 127.0.0.1
+  when: item[0].primary and item[0].monitoring_username is defined and item[0].monitoring_username | length > 0
+  with_nested:
+    - "{{ percona_cluster_wsrep }}"
+    - [localhost, 127.0.0.1]
   vars:
     ansible_python_interpreter: /usr/bin/python3
 
 - name: place logrotate config
   template:
     src: "logrotate.j2"
+    mode: 0644
+    owner: root
+    group: root
     dest: "/etc/logrotate.d/percona-xtradb-cluster-server-{{ percona_cluster_version }}"
 
 - name: secure the MySQL root user for localhost
@@ -49,9 +100,12 @@
     user="root"
     password="{{ percona_cluster_root_password }}"
     host="127.0.0.1"
-  when: percona_cluster_wsrep.primary
+  when: percona_cluster_node.primary
   vars:
     ansible_python_interpreter: /usr/bin/python3
+  loop: "{{ percona_cluster_wsrep }}"
+  loop_control:
+    loop_var: percona_cluster_node
 
 - name: remove the test database
   mysql_db: >

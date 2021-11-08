@@ -19,19 +19,20 @@ Role which installs and configures Percona XtraDB Cluster.
         innodb_large_prefix: false
         expire_log_days: 8
       percona_cluster_wsrep:
-        primary: true
-        wsrep_cluster_address: "gcomm://1.1.1.1,2.2.2.2,3.3.3.3"
-        wsrep_cluster_name: 'test-cluster'
-        wsrep_node_address: "1.2.3.4"
-        wsrep_node_name: 'some-node'
-        wsrep_provider: "/usr/lib/libgalera_smm.so"
-        wsrep_sst_method: "xtrabackup-v2"
-        wsrep_slave_threads: '1'
-        wsrep_provider_options: ''
-        sst_username: 'some-username'
-        sst_password: 'another_strong_password_from_vault'
-        monitoring_username: 'netdata'
-        monitoring_password: 'and_another_strong_password_from_vault'
+        - name: node1
+          primary: true
+          wsrep_cluster_address: "gcomm://1.1.1.1,2.2.2.2,3.3.3.3"
+          wsrep_cluster_name: 'test-cluster'
+          wsrep_node_address: "1.2.3.4"
+          wsrep_node_name: 'some-node'
+          wsrep_provider: "/usr/lib/libgalera_smm.so"
+          wsrep_sst_method: "xtrabackup-v2"
+          wsrep_slave_threads: '1'
+          wsrep_provider_options: ''
+          sst_username: 'some-username'
+          sst_password: 'another_strong_password_from_vault'
+          monitoring_username: 'netdata'
+          monitoring_password: 'and_another_strong_password_from_vault'
       percona_cluster_wsrep_notify:
         enabled: true
         script_path: '/usr/local/sbin/custom.wsrep_notify'
