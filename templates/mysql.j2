@@ -2,12 +2,16 @@
 pid-file                 = {{ percona_cluster_general.pidfile|default("/var/run/mysqld/mysqld.pid", true) }}
 bind-address             = {{ percona_cluster_general.bind_address|default("127.0.0.1", true) }}
 datadir                  = {{ percona_cluster_general.datadir|default("/var/lib/mysql", true) }}
-server_id                = {{ percona_cluster_general.server_id }}
 expire-logs-days         = {{ percona_cluster_general.expire_log_days }}
 max_allowed_packet       = {{ percona_cluster_general.max_allowed_packet|default("67108864", true) }}
 log_error                = /var/log/mysql/error.log
 binlog_format            = ROW
 default_storage_engine   = InnoDB
+
+{% if percona_cluster_global_params is defined %}{% for param, value in percona_cluster_global_params.items() %}
+{{ param }} = {{ value }}
+{% endfor %}{% endif %}
+
 
 # InnoDB
 innodb_flush_log_at_trx_commit = 1

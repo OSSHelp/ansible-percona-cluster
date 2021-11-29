@@ -15,12 +15,15 @@ Role which installs and configures Percona XtraDB Cluster.
       percona_cluster_general:
         datadir: /var/lib/mysql
         bind_address: '0.0.0.0'
-        server_id: 'some_unique_id'
         innodb_large_prefix: false
         expire_log_days: 8
+      percona_cluster_global_params:
+        max_connections: 1000
+        character_set_server: utf8
       percona_cluster_wsrep:
         - name: node1
           primary: true
+          server_id: 'some_unique_id'
           wsrep_cluster_address: "gcomm://1.1.1.1,2.2.2.2,3.3.3.3"
           wsrep_cluster_name: 'test-cluster'
           wsrep_node_address: "1.2.3.4"
@@ -33,6 +36,9 @@ Role which installs and configures Percona XtraDB Cluster.
           sst_password: 'another_strong_password_from_vault'
           monitoring_username: 'netdata'
           monitoring_password: 'and_another_strong_password_from_vault'
+          custom_node_params:
+            query_cache_limit: 16M
+            query_cache_size: 512M
       percona_cluster_wsrep_notify:
         enabled: true
         script_path: '/usr/local/sbin/custom.wsrep_notify'
@@ -56,9 +62,10 @@ These params are for setting up general MySQL params:
 | -------- | -------- |
 | datadir | MySQL data directory |
 | bind_address | an IP-address to bind to |
-| server_id | unique id, needed for correct clusterization |
+| innodb_buffer_pool_size | InnoDB buffer pool size |
 | innodb_large_prefix | when set to "true", index key prefixes longer than 767 bytes (up to 3072 bytes) are allowed for InnoDB |
 | expire_log_days | number of days to keep binary logs |
+| percona_cluster_global_params | global parameters for MySQL main config |
 
 ### percona_cluster_wsrep
 
@@ -66,10 +73,20 @@ Most of these params are for setting up wsrep, check [our article](https://oss.h
 
 | Param | Description |
 | -------- | -------- |
-| percona_cluster_version | version of Percona-cluster to install |
-| percona_cluster_root_password | root password for MySQL. Make sure it is taken from vault |
+| server_id | unique id, needed for correct clusterization |
 | primary | if set to "true" the node will be used for sst-user and monitoring-user creation |
 | monitoring_username, monitoring_password | credentials for monitoring access (netdata) |
+| custom_node_params | custom parameters for percona-cluster node |
+
+Configuration files for each node is generated in the `/etc/mysql/conf-avalaible` directory. To enable it, use lxhelper profile section, for example:
+
+```yaml
+    profiles:
+      db1:
+        mysql:
+          enable-cfg:
+            - wsrep-db1.cnf
+```
 
 ### percona_cluster_wsrep_notify
 

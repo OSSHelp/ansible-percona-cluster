@@ -1,5 +1,10 @@
 [mysqld]
 
+server_id = {{ percona_cluster_node.server_id }}
+{% if percona_cluster_node.custom_node_params is defined %}{% for param, value in percona_cluster_node.custom_node_params.items() %}
+{{ param }} = {{ value }}
+{% endfor %}{% endif %}
+
 # wsrep
 wsrep_cluster_address   = {{ percona_cluster_node.wsrep_cluster_address }}
 wsrep_cluster_name      = {{ percona_cluster_node.wsrep_cluster_name }}
